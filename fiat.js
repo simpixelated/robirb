@@ -1,6 +1,7 @@
 /* TODO:
    * follow new friends
    * favorite new mentions
+   * send DM when someone retweets an original tweet (and they are friend)
    * tweet images from instagram:
    		http://instagram.com/developer/endpoints/tags/#get_tags_media_recent
    * tweet images from tumblr:
