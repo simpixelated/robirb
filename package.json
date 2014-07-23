@@ -13,6 +13,7 @@
   "author": "Jordan Kohl",
   "license": "ISC",
   "dependencies": {
-    "twit": "^1.1.18"
+    "twit": "^1.1.18",
+    "flickrapi": "^0.3.23"
   }
 }
