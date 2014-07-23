@@ -1,0 +1,18 @@
+{
+  "name": "twitterbot",
+  "version": "0.1.0",
+  "description": "Twitterbot based on twit.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "twitter",
+    "bot"
+  ],
+  "author": "Jordan Kohl",
+  "license": "ISC",
+  "dependencies": {
+    "twit": "^1.1.18"
+  }
+}
