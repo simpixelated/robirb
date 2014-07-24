@@ -1,12 +1,35 @@
 (function() {
 	var Bot = require('./bot.js'),
 		config = require('./config.js'),
-		bot = new Bot(config.twitter);
+		bot = new Bot(config.twitter),
+		_ = require('lodash-node');
 
-	var interval = 120000,
+	var interval = 60000,
 		started = new Date();
 
 	var Flickr = require("flickrapi");
+
+	Bot.prototype.getFlickrPhoto = function (query, callback) {
+		var cache = this.cache.flickr,
+			self = this,
+			photo;
+
+		if (!cache) {
+			Flickr.tokenOnly(config.flickr, function(err, flickr) {
+				flickr.photos.search({ text: config.keyword }, function(err, result) {
+					self.cache.flickr = _.map(_.shuffle(result.photos.photo), function (flickrPhoto) {
+						flickrPhoto.url = 'https://flic.kr/p/'+base58encode(flickrPhoto.id);
+						return flickrPhoto;
+					});
+					photo = self.cache.flickr.pop();
+					return callback(err, photo);
+				});
+			});
+		} else {
+			photo = self.cache.flickr.pop();
+			return callback(undefined, photo);			
+		}
+	};
 
 	function start () {
 		console.log('running Twitter behavior every ' + interval/1000 + ' seconds...');
@@ -15,50 +38,44 @@
 
 	  		// post a tweet using a popular (based on retweets) tweet from search
 	  		if(rand <= 0.10) {
-			    /*var params = {
-			    	q: config.keyword,
-			    	result_type: 'mixed',
-			    	lang: 'en'
-			    };
+			 //    var params = {
+			 //    	q: config.keyword,
+			 //    	result_type: 'mixed',
+			 //    	lang: 'en'
+			 //    };
 
-			    bot.twit.get('search/tweets', params, function (err, reply) {
+			 //    bot.twit.get('search/tweets', params, function (err, reply) {
+				// 	if(err) return handleError(err);
+
+				// 	var max = 0,
+				// 		popular,
+				// 		tweets = reply.statuses,
+				// 		i = tweets.length;
+
+				// 	while(i--) {
+				// 		var tweet = tweets[i],
+				// 			popularity = tweet.retweet_count;
+
+				// 		if(popularity > max) {
+				// 			max = popularity;
+				// 		  	popular = tweet.text;
+				// 		}
+				// 	}
+
+				// 	bot.tweet(popular, function (err, reply) {
+				// 		if(err) return handleError(err);
+				// 		console.log('\nTweet: ' + (reply ? reply.text : reply));
+				// 	});
+				// });
+
+				// post a random photo from Flickr/Instagram/Tumblr/etc.
+				bot.getFlickrPhoto(config.keyword, function (err, photo) {
 					if(err) return handleError(err);
-
-					var max = 0,
-						popular,
-						tweets = reply.statuses,
-						i = tweets.length;
-
-					while(i--) {
-						var tweet = tweets[i],
-							popularity = tweet.retweet_count;
-
-						if(popularity > max) {
-							max = popularity;
-						  	popular = tweet.text;
-						}
-					}
-
-					bot.tweet(popular, function (err, reply) {
-						if(err) return handleError(err);
+					bot.tweet(photo.title + ': ' + photo.url, function (err, reply) {
+						if(err) return handleError(err, '\ntried to tweet photo');
 						console.log('\nTweet: ' + (reply ? reply.text : reply));
 					});
-				});*/
-
-				// post a random photo from Flickr
-				/*Flickr.tokenOnly(config.flickr, function(error, flickr) {
-					flickr.photos.search({ text: config.keyword }, function(err, result) {
-						if(err) return handleError(err);
-
-						var photo = bot.randIndex(result.photos.photo),
-							url = 'https://flic.kr/p/'+base58encode(photo.id);
-
-						bot.tweet(photo.title + ': ' + url, function (err, reply) {
-							if(err) return handleError(err, '\ntried to tweet Flickr');
-							console.log('\nTweet: ' + (reply ? reply.text : reply));
-						});
-					});
-				});*/
+				});
 
 			// retweet from search
 			} else if(rand <= 0.20) {

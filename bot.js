@@ -5,6 +5,7 @@
 var Twit = require('./node_modules/twit/lib/twitter.js'),
 	Bot = module.exports = function(config) { 
 		this.twit = new Twit(config);
+		this.cache = {};
 	};
 
 //
