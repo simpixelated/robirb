@@ -85,10 +85,10 @@
 			    	lang: 'en'
 			    };
 			 
-			    bot.retweet(params, function(err, reply) {
-			     	if(err) return handleError(err, '\ntried to retweet');
-			      	console.log("\nRetweet: retweeted response: " + reply.id);
-			    });
+			    // bot.retweet(params, function(err, reply) {
+			    //  	if(err) return handleError(err, '\ntried to retweet');
+			    //   	console.log("\nRetweet: retweeted response: " + reply.id);
+			    // });
 
 			// follow someone new
 			} else if(rand <= 0.70) {
