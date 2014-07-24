@@ -73,7 +73,7 @@
 				});*/
 
 				// post a random photo from Flickr
-				Flickr.tokenOnly(config.flickr, function(error, flickr) {
+				/*Flickr.tokenOnly(config.flickr, function(error, flickr) {
 					flickr.photos.search({ text: 'fiat+500+abarth' }, function(err, result) {
 						if(err) return handleError(err);
 
@@ -85,7 +85,7 @@
 							console.log('\nTweet: ' + (reply ? reply.text : reply));
 						});
 					});
-				});
+				});*/
 
 			// retweet from search
 			} else if(rand <= 0.20) {
@@ -96,12 +96,12 @@
 			    };
 			 
 			    bot.retweet(params, function(err, reply) {
-			     	if(err) return handleError(err, '\ntried to retweet: ' + reply.id);
+			     	if(err) return handleError(err, '\ntried to retweet');
 			      	console.log("\nRetweet: retweeted response: " + reply.id);
 			    });
 
 			// follow someone new
-			} else if(rand <= 0.50) {
+			} else if(rand <= 0.70) {
 
 				if (Math.random() <= 0.50) {
 
