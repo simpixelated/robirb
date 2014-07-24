@@ -1,30 +1,3 @@
-/* TODO:
-   * follow new friends
-   * favorite new mentions
-   * send DM when someone retweets an original tweet (and they are friend)
-   * tweet images from instagram:
-   		http://instagram.com/developer/endpoints/tags/#get_tags_media_recent
-   * tweet images from tumblr:
-   		http://www.tumblr.com/docs/en/api/v2#tagged-method
-   * use Wolfram Alpa to respond to @mentions
-     	http://products.wolframalpha.com/developers/
-     	https://github.com/leops/node-wolfram
-     	http://ctrlq.org/code/19408-create-bot
-   * tweet content from Reddit
-   		http://www.reddit.com/r/Fiat/
-   		http://www.reddit.com/search?q=abarth
-   		http://www.reddit.com/dev/api#GET_search
-   * tweet images from Google CSE?
-   * tweet links to Amazon products
-   * tweet links to fiat500abarth.us
-   * tweet articles from the other FIAT site
-   * tweet content from the other FIAT forum
-   * tweet content from YouTube:
-     	https://developers.google.com/youtube/v3/docs/search/list
-   * prevent duplicate tweets... maybe cache timeline and do text search against it before posting?
-
-   https://help.hootsuite.com/entries/22460803-What-are-some-advanced-Twitter-search-examples-
-*/
 (function() {
 	var Bot = require('./bot.js'),
 		config = require('./config.js'),
@@ -43,7 +16,7 @@
 	  		// post a tweet using a popular (based on retweets) tweet from search
 	  		if(rand <= 0.10) {
 			    /*var params = {
-			    	q: 'fiat 500 abarth',
+			    	q: config.keyword,
 			    	result_type: 'mixed',
 			    	lang: 'en'
 			    };
@@ -74,7 +47,7 @@
 
 				// post a random photo from Flickr
 				/*Flickr.tokenOnly(config.flickr, function(error, flickr) {
-					flickr.photos.search({ text: 'fiat+500+abarth' }, function(err, result) {
+					flickr.photos.search({ text: config.keyword }, function(err, result) {
 						if(err) return handleError(err);
 
 						var photo = bot.randIndex(result.photos.photo),
@@ -90,7 +63,7 @@
 			// retweet from search
 			} else if(rand <= 0.20) {
 				var params = {
-			    	q: 'fiat 500 abarth',
+			    	q: config.keyword,
 			    	result_type: 'mixed',
 			    	lang: 'en'
 			    };
@@ -114,7 +87,7 @@
 
 				} else {
 					var params = {
-				    	q: 'fiat 500 abarth',
+				    	q: config.keyword,
 				    	result_type: 'mixed',
 				    	lang: 'en'
 				    };
