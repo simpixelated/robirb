@@ -2,10 +2,12 @@
 //  Bot
 //  class for performing various twitter actions
 //
-var Twit = require('./node_modules/twit/lib/twitter.js'),
+var Twit = require('./node_modules/twit/lib/twitter'),
+	_ = require('lodash-node'),
 	Bot = module.exports = function(config) { 
 		this.twit = new Twit(config);
-		this.cache = {};
+		this.cache = [];
+		this.screen_name = config.screen_name;
 	};
 
 //
@@ -16,6 +18,8 @@ Bot.prototype.tweet = function (status, callback) {
 		return callback(new Error('tweet must be of type String'));
   	} else if(status.length > 140) {
 		return callback(new Error('tweet is too long: ' + status.length));
+  	} else if(this.isDuplicate(status)) {
+  		return callback(new Error('tweet is a duplicate'));
   	}
   	this.twit.post('statuses/update', { status: status }, callback);
 };
@@ -118,6 +122,11 @@ Bot.prototype.favorite = function (params, callback) {
  
     	self.twit.post('favorites/create', { id: randomTweet.id_str }, callback);
   	});
+};
+
+// check for duplicate tweets in recent timeline
+Bot.prototype.isDuplicate = function (tweet) {
+	return _.any(this.cache, { text: tweet });
 };
 
 Bot.prototype.randIndex = function (arr) {

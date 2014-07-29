@@ -1,38 +1,28 @@
 (function() {
-	var Bot = require('./bot.js'),
-		config = require('./config.js'),
+	var Bot = require('./bot'),
+		config = require('./config'),
 		bot = new Bot(config.twitter),
+		flickr = require("./flickr"),
 		_ = require('lodash-node');
 
-	var interval = 60000,
+	var interval = 120000,
 		started = new Date();
 
-	var Flickr = require("flickrapi");
-
-	Bot.prototype.getFlickrPhoto = function (query, callback) {
-		var cache = this.cache.flickr,
-			self = this,
-			photo;
-
-		if (!cache) {
-			Flickr.tokenOnly(config.flickr, function(err, flickr) {
-				flickr.photos.search({ text: config.keyword }, function(err, result) {
-					self.cache.flickr = _.map(_.shuffle(result.photos.photo), function (flickrPhoto) {
-						flickrPhoto.url = 'https://flic.kr/p/'+base58encode(flickrPhoto.id);
-						return flickrPhoto;
-					});
-					photo = self.cache.flickr.pop();
-					return callback(err, photo);
-				});
-			});
-		} else {
-			photo = self.cache.flickr.pop();
-			return callback(undefined, photo);			
-		}
-	};
+	bot.flickr = new flickr(config.flickr);
 
 	function start () {
 		console.log('running Twitter behavior every ' + interval/1000 + ' seconds...');
+
+		var params = {
+			screen_name: bot.screen_name
+		};
+
+		// get timeline to help prevent duplicate tweets
+		bot.twit.get('statuses/user_timeline', params, function (err, statuses, response) {
+			if(err) return handleError(err, '\nfailed to get timeline');
+			bot.cache = statuses;
+		});
+
 		setInterval(function() {
 			var rand = Math.random();
 
@@ -68,8 +58,8 @@
 				// 	});
 				// });
 
-				// post a random photo from Flickr/Instagram/Tumblr/etc.
-				bot.getFlickrPhoto(config.keyword, function (err, photo) {
+				//post a random photo from Flickr/Instagram/Tumblr/etc.
+				bot.flickr.getPhoto(config.keyword, function (err, photo) {
 					if(err) return handleError(err);
 					bot.tweet(photo.title + ': ' + photo.url, function (err, reply) {
 						if(err) return handleError(err, '\ntried to tweet photo');
@@ -132,23 +122,9 @@
 
 	function handleError(err, attempt) {
 		if (attempt) { console.error(attempt); }
+		console.error(err);
 		console.error('response status:', err.statusCode);
 	  	console.error('data:', err.data);
-	}
-
-	function base58encode(num) {
-	    if (typeof num !== 'number') num = parseInt(num);
-	    var enc = '',
-	        alpha = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
-	    var div = num,
-	        mod;
-	    while (num >= 58) {
-	        div = num / 58;
-	        mod = num - (58 * Math.floor(div));
-	        enc = '' + alpha.substr(mod, 1) + enc;
-	        num = Math.floor(div);
-	    }
-	    return (div) ? '' + alpha.substr(div, 1) + enc : enc;
 	}
 
 	start();
