@@ -13,14 +13,27 @@
 	function start () {
 		console.log('running Twitter behavior every ' + interval/1000 + ' seconds...');
 
-		var params = {
-			screen_name: bot.screen_name
-		};
-
 		// get timeline to help prevent duplicate tweets
-		bot.twit.get('statuses/user_timeline', params, function (err, statuses, response) {
+		bot.twit.get('statuses/user_timeline', {screen_name: bot.screen_name}, function (err, statuses, response) {
 			if(err) return handleError(err, '\nfailed to get timeline');
 			bot.cache = statuses;
+		});
+
+		// use Flickr to add tweets to queue
+		bot.flickr.getPhotos(config.keyword, function (err, photos) {
+			if(err) return handleError(err);
+			var tweets = _.map(photos, function (photo) {
+				//var descriptors = ['beautiful', 'gorgeous', 'nice', 'wow', 'stunning'];
+				return {
+					text: photo.title + ' ' + photo.url,
+					approved: false
+				};
+			});
+			bot.queueTweets(tweets, function (err, resp) {
+				if(err) return handleError(err);
+				console.log(resp);	
+			});
+			
 		});
 
 		setInterval(function() {
@@ -28,6 +41,10 @@
 
 	  		// post a tweet using a popular (based on retweets) tweet from search
 	  		if(rand <= 0.10) {
+				bot.tweetFromQueue(function (error, reply) {
+					if(error) return handleError(error);
+					console.log('\nTweet: ' + (reply ? reply.text : reply));
+				});
 			 //    var params = {
 			 //    	q: config.keyword,
 			 //    	result_type: 'mixed',
@@ -57,17 +74,6 @@
 				// 		console.log('\nTweet: ' + (reply ? reply.text : reply));
 				// 	});
 				// });
-
-				//post a random photo from Flickr/Instagram/Tumblr/etc.
-				bot.flickr.getPhoto(config.keyword, function (err, photo) {
-					if(err) return handleError(err);
-					var descriptors = ['beautiful', 'gorgeous', 'nice', 'wow', 'stunning'],
-						text = _.sample(descriptors) + ': ' + photo.title + ': ' + photo.url;
-					bot.tweet(text, function (err, reply) {
-						if(err) return handleError(err, '\ntried to tweet photo');
-						console.log('\nTweet: ' + (reply ? reply.text : reply));
-					});
-				});
 
 			// retweet from search
 			} else if(rand <= 0.20) {

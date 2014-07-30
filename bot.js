@@ -4,11 +4,66 @@
 //
 var Twit = require('./node_modules/twit/lib/twitter'),
 	_ = require('lodash-node'),
+	fs = require('fs'),
 	Bot = module.exports = function(config) { 
 		this.twit = new Twit(config);
 		this.cache = [];
+		this.queue = [];
 		this.screen_name = config.screen_name;
 	};
+
+// add a tweet to queue
+Bot.prototype.queueTweets = function (tweets, callback) {
+	var queue = './data/tweetQueue.json',
+		self = this;
+
+	fs.readFile(queue, function (err, data) {
+		if (err) throw err;
+		data = JSON.parse(data);
+		tweets = _.filter(tweets, function (tweet) {
+			return !self.isDuplicate(tweet.text, data.concat(self.cache));
+		});
+
+		if (!tweets.length) {
+			return callback(null, 'no new tweets added, ' + data.length + ' in queue');
+		}
+		// update the file
+		fs.writeFile(queue, JSON.stringify(data.concat(tweets), null, 4), function(err) {
+			if(err) {
+		    	return callback(err);
+		    } else {
+		        return callback(null, tweets.length + ' new tweets added to queue');
+		    }
+		}); 
+	});
+};
+
+Bot.prototype.tweetFromQueue = function (callback) {
+	var queue = './data/tweetQueue.json',
+		self = this;
+
+	fs.readFile(queue, function (err, data) {
+		if (err) throw err;
+		var tweets = JSON.parse(data),
+			tweet = _.find(tweets, 'approved');
+
+		if (tweet) {
+			console.log(tweet.text);
+			//self.tweet(tweet.text, callback);
+			_.remove(tweets, function (qTweet) { return qTweet.text === tweet.text; });
+			// update the file
+			fs.writeFile(queue, JSON.stringify(tweets, null, 4), function(err) {
+				if(err) {
+			    	console.log(err);
+			    } else {
+			        console.log(tweets.length + ' tweets queued');
+			    }
+			});
+		} else {
+			return callback(new Error('no approved tweets in queue'));
+		}
+	});
+};
 
 //
 //  post a tweet
@@ -127,8 +182,9 @@ Bot.prototype.favorite = function (params, callback) {
 };
 
 // check for duplicate tweets in recent timeline
-Bot.prototype.isDuplicate = function (tweet) {
-	return _.any(this.cache, { text: tweet });
+Bot.prototype.isDuplicate = function (tweet, tweets) {
+	tweets = tweets || this.cache;
+	return _.any(tweets, { text: tweet });
 };
 
 Bot.prototype.randIndex = function (arr) {

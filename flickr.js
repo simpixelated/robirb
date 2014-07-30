@@ -4,6 +4,21 @@ var FlickrAPI = require("flickrapi"),
 var flickr = function (config) {
 	this.cache = [],
 	this.config = config;
+	
+	// get a bunch of photos via keyword
+	this.getPhotos = function (query, callback) {
+		FlickrAPI.tokenOnly(this.config, function(err, api) {
+			api.photos.search({ text: query.replace(/\s/g, '+') }, function(err, result) {
+				var photos = _.map(result.photos.photo, function (flickrPhoto) {
+					flickrPhoto.url = 'https://flic.kr/p/'+base58encode(flickrPhoto.id);
+					return flickrPhoto;
+				});
+				return callback(err, photos);
+			});
+		});
+	};
+
+	// get a single photo, either from cache or new call
 	this.getPhoto = function (query, callback) {
 		var self = this,
 			photo;
