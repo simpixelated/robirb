@@ -22,6 +22,8 @@ Bot.prototype.tweet = function (status, callback) {
   		return callback(new Error('tweet is a duplicate'));
   	}
   	this.twit.post('statuses/update', { status: status }, callback);
+  	// add the new tweet to the stash
+  	this.cache.push({ text: status });
 };
 
 //

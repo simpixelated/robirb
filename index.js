@@ -61,7 +61,9 @@
 				//post a random photo from Flickr/Instagram/Tumblr/etc.
 				bot.flickr.getPhoto(config.keyword, function (err, photo) {
 					if(err) return handleError(err);
-					bot.tweet(photo.title + ': ' + photo.url, function (err, reply) {
+					var descriptors = ['beautiful', 'gorgeous', 'nice', 'wow', 'stunning'],
+						text = _.sample(descriptors) + ': ' + photo.title + ': ' + photo.url;
+					bot.tweet(text, function (err, reply) {
 						if(err) return handleError(err, '\ntried to tweet photo');
 						console.log('\nTweet: ' + (reply ? reply.text : reply));
 					});

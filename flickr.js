@@ -5,16 +5,15 @@ var flickr = function (config) {
 	this.cache = [],
 	this.config = config;
 	this.getPhoto = function (query, callback) {
-		var cache = this.cache,
-			self = this,
+		var self = this,
 			photo;
 
-		if (cache.length) {
-			photo = cache.pop();
+		if (this.cache.length) {
+			photo = this.cache.pop();
 			return callback(undefined, photo);
 		} else {
 			FlickrAPI.tokenOnly(this.config, function(err, api) {
-				api.photos.search({ text: query }, function(err, result) {
+				api.photos.search({ text: query.replace(/\s/g, '+') }, function(err, result) {
 					self.cache = _.map(_.shuffle(result.photos.photo), function (flickrPhoto) {
 						flickrPhoto.url = 'https://flic.kr/p/'+base58encode(flickrPhoto.id);
 						return flickrPhoto;
