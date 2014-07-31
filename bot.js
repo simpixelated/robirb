@@ -48,15 +48,14 @@ Bot.prototype.tweetFromQueue = function (callback) {
 			tweet = _.find(tweets, 'approved');
 
 		if (tweet) {
-			console.log(tweet.text);
-			//self.tweet(tweet.text, callback);
+			self.tweet(tweet.text, callback);
 			_.remove(tweets, function (qTweet) { return qTweet.text === tweet.text; });
 			// update the file
 			fs.writeFile(queue, JSON.stringify(tweets, null, 4), function(err) {
 				if(err) {
 			    	console.log(err);
 			    } else {
-			        console.log(tweets.length + ' tweets queued');
+			        console.log(tweets.length + ' tweets still in queue');
 			    }
 			});
 		} else {
