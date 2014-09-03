@@ -45,35 +45,6 @@
 					if(error) return handleError(error);
 					console.log('\nTweet: ' + (reply ? reply.text : reply));
 				});
-			 //    var params = {
-			 //    	q: config.keyword,
-			 //    	result_type: 'mixed',
-			 //    	lang: 'en'
-			 //    };
-
-			 //    bot.twit.get('search/tweets', params, function (err, reply) {
-				// 	if(err) return handleError(err);
-
-				// 	var max = 0,
-				// 		popular,
-				// 		tweets = reply.statuses,
-				// 		i = tweets.length;
-
-				// 	while(i--) {
-				// 		var tweet = tweets[i],
-				// 			popularity = tweet.retweet_count;
-
-				// 		if(popularity > max) {
-				// 			max = popularity;
-				// 		  	popular = tweet.text;
-				// 		}
-				// 	}
-
-				// 	bot.tweet(popular, function (err, reply) {
-				// 		if(err) return handleError(err);
-				// 		console.log('\nTweet: ' + (reply ? reply.text : reply));
-				// 	});
-				// });
 
 			// retweet from search
 			} else if(rand <= 0.20) {
@@ -82,11 +53,6 @@
 			    	result_type: 'mixed',
 			    	lang: 'en'
 			    };
-			 
-			    // bot.retweet(params, function(err, reply) {
-			    //  	if(err) return handleError(err, '\ntried to retweet');
-			    //   	console.log("\nRetweet: retweeted response: " + reply.id);
-			    // });
 
 			// follow someone new
 			} else if(rand <= 0.70) {
