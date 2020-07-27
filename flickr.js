@@ -1,5 +1,5 @@
 const FlickrAPI = require('flickrapi')
-const _ = require('lodash-node')
+const _ = require('lodash')
 
 const flickr = function (config) {
   this.cache = []

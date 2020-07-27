@@ -11,10 +11,10 @@ References:
 
 
 TODO:
-- [ ] cleanup to match eslint (standard)
+- [x] cleanup to match eslint (standard)
 - [ ] update to flickr-sdk
 - [ ] update to twitter SDK (if exists)
 - [ ] incorporate flickr-faves-from-gallery
 - [ ] eliminate "this" and "prototype"
 - [ ] update dependencies
-- [ ] reduce/remove usage of _
+- [x] reduce/remove usage of _

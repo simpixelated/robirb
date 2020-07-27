@@ -15,9 +15,9 @@
   "author": "Jordan Kohl",
   "license": "ISC",
   "dependencies": {
-    "twit": "^1.1.18",
     "flickrapi": "^0.3.23",
-    "lodash-node": "^2.4.1"
+    "lodash": "^4.17.19",
+    "twit": "^1.1.18"
   },
   "devDependencies": {
     "eslint": "^7.5.0",

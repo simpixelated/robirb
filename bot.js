@@ -3,7 +3,7 @@
 //  class for performing various twitter actions
 //
 const Twit = require('./node_modules/twit/lib/twitter')
-const _ = require('lodash-node')
+const _ = require('lodash')
 const fs = require('fs')
 
 const Bot = module.exports = function (config) {
