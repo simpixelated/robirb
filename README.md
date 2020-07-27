@@ -16,3 +16,5 @@ TODO:
 - [ ] update to twitter SDK (if exists)
 - [ ] incorporate flickr-faves-from-gallery
 - [ ] eliminate "this" and "prototype"
+- [ ] update dependencies
+- [ ] reduce/remove usage of _
