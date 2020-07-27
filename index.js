@@ -1,9 +1,6 @@
 const Bot = require('./bot')
 const config = require('./config')
-const bot = new Bot(config.twitter)
 const Flickr = require('./flickr')
-
-const flickr = new Flickr(config.flickr)
 
 const randomInt = (a = 1, b = 0) => {
   const lower = Math.ceil(Math.min(a, b))
@@ -22,7 +19,10 @@ const handleError = (err, attempt) => {
   )
 }
 
-const start = (interval = 120) => {
+const start = (interval = 120, devMode = false) => {
+  const bot = new Bot(config.twitter, devMode)
+  const flickr = new Flickr(config.flickr)
+
   console.log(`Fetching tweets for ${bot.screen_name} to help prevent duplicates...`)
   bot.twit.get('statuses/user_timeline', { screen_name: bot.screen_name }, (err, statuses) => {
     if (err) return handleError(err, '\nfailed to get timeline')
@@ -64,7 +64,9 @@ const start = (interval = 120) => {
     // follow a friend of a friend
     () => bot.mingle((err, reply) => {
       if (err) return handleError(err, '\ntried to mingle')
-      console.log(`\nMingle: followed @${reply.screen_name}`)
+      if (reply && reply.screen_name) {
+        console.log(`\nMingle: followed @${reply.screen_name}`)
+      }
     }),
 
     // find someone new to follow
@@ -76,14 +78,18 @@ const start = (interval = 120) => {
       }
       bot.searchFollow(params, (err, reply) => {
         if (err) return handleError(err, '\ntried to searchFollow')
-        console.log(`\nSearchFollow: followed @${reply.screen_name}`)
+        if (reply && reply.screen_name) {
+          console.log(`\nSearchFollow: followed @${reply.screen_name}`)
+        }
       })
     },
 
     // remove a follower that doesn't follow you
-    bot.prune((err, reply) => {
+    () => bot.prune((err, reply) => {
       if (err) return handleError(err, '\ntried to unfollow')
-      console.log(`\nPrune: unfollowed @${reply.screen_name}`)
+      if (reply && reply.screen_name) {
+        console.log(`\nPrune: unfollowed @${reply.screen_name}`)
+      }
     })
   ]
 

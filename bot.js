@@ -6,11 +6,22 @@ const Twitter = require('twitter')
 const _ = require('lodash')
 const fs = require('fs')
 
-const Bot = module.exports = function (config) {
+const Bot = module.exports = function (config, devMode) {
   this.twit = new Twitter(config)
   this.cache = []
   this.queue = []
   this.screen_name = config.screen_name
+  if (devMode === true) {
+    console.log('devMode enabled; no tweets will be posted')
+    this.twit.post = (url, param, callback) => {
+      console.log(url, param)
+      callback()
+    }
+    this.twit.tweet = (text, callback) => {
+      console.log(text)
+      callback()
+    }
+  }
 }
 
 // add a tweet to queue
