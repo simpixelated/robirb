@@ -1,106 +1,92 @@
-(function() {
-	var Bot = require('./bot'),
-		config = require('./config'),
-		bot = new Bot(config.twitter),
-		flickr = require("./flickr"),
-		_ = require('lodash-node');
+const _ = require('lodash-node');
 
-	var interval = 120000,
-		started = new Date();
+const Bot = require('./bot');
+const config = require('./config');
+const bot = new Bot(config.twitter);
+const Flickr = require("./flickr");
 
-	bot.flickr = new flickr(config.flickr);
+const interval = 120000;
+const started = new Date();
+const flickr = new Flickr(config.flickr);
 
-	function start () {
-		console.log('running Twitter behavior every ' + interval/1000 + ' seconds...');
+const start = ()  => {
+	console.log(`fetching tweets for ${bot.screen_name} to help prevent duplicates`)
+	bot.twit.get('statuses/user_timeline', {screen_name: bot.screen_name}, (err, statuses) => {
+		if(err) return handleError(err, '\nfailed to get timeline');
+		bot.cache = statuses;
+	});
 
-		// get timeline to help prevent duplicate tweets
-		bot.twit.get('statuses/user_timeline', {screen_name: bot.screen_name}, function (err, statuses, response) {
-			if(err) return handleError(err, '\nfailed to get timeline');
-			bot.cache = statuses;
-		});
-
-		// use Flickr to add tweets to queue
-		bot.flickr.getPhotos(config.keyword, function (err, photos) {
+	// create tweets from Flickr photos
+	flickr.getPhotos(config.keyword, (err, photos) => {
+		if(err) return handleError(err);
+		const tweets = photos.map((photo) => ({
+			text: `${photo.title} ${photo.url}`,
+			approved: false
+		}));
+		bot.queueTweets(tweets, (err, resp) => {
 			if(err) return handleError(err);
-			var tweets = _.map(photos, function (photo) {
-				//var descriptors = ['beautiful', 'gorgeous', 'nice', 'wow', 'stunning'];
-				return {
-					text: photo.title + ' ' + photo.url,
-					approved: false
-				};
-			});
-			bot.queueTweets(tweets, function (err, resp) {
-				if(err) return handleError(err);
-				console.log(resp);	
-			});
-			
+			console.log(resp);
 		});
+	});
 
-		setInterval(function() {
-			var rand = Math.random();
+	console.log(`running Twitter behavior every ${interval/1000} seconds...`);
+	setInterval(() => {
+		const rand = Math.random();
 
-	  		// post a tweet using a popular (based on retweets) tweet from search
-	  		if(rand <= 0.10) {
-				bot.tweetFromQueue(function (error, reply) {
-					if(error) return handleError(error);
-					console.log('\nTweet: ' + (reply ? reply.text : reply));
+		// post an "original" tweet using a popular (based on retweets) tweet from search
+		if(rand <= 0.10) {
+			bot.tweetFromQueue((error, reply) => {
+				if(error) return handleError(error);
+				console.log('\nTweet: ' + (reply ? reply.text : reply));
+			});
+
+		// retweet from search
+		} else if(rand <= 0.20) {
+			console.log(`Would retweet from search, but that's not ready yet...`);
+			// TODO
+			// const params = {
+			// 		q: config.keyword,
+			// 		result_type: 'mixed',
+			// 		lang: 'en'
+			// 	};
+
+		// follow someone new
+		} else if(rand <= 0.70) {
+			if (Math.random() <= 0.50) {
+				bot.mingle((err, reply) => {
+					if(err) return handleError(err, '\ntried to mingle');
+					console.log(`\nMingle: followed @${reply.screen_name}`);
 				});
-
-			// retweet from search
-			} else if(rand <= 0.20) {
-				var params = {
-			    	q: config.keyword,
-			    	result_type: 'mixed',
-			    	lang: 'en'
-			    };
-
-			// follow someone new
-			} else if(rand <= 0.70) {
-
-				if (Math.random() <= 0.50) {
-
-					bot.mingle(function(err, reply) {
-						if(err) return handleError(err, '\ntried to mingle');
-
-						var name = reply.screen_name;
-						console.log('\nMingle: followed @' + name);
-				    });
-
-				} else {
-					var params = {
-				    	q: config.keyword,
-				    	result_type: 'mixed',
-				    	lang: 'en'
-				    };
-				 
-				    bot.searchFollow(params, function(err, reply) {
-						if(err) return handleError(err, '\ntried to searchFollow');
-
-						var name = reply.screen_name;
-						console.log("\nSearchFollow: followed @" + name);
-				    });
-				}
-
-			// remove a follower that doesn't follow you
 			} else {
-			    
-			    bot.prune(function(err, reply) {
-			    	if(err) return handleError(err, '\ntried to unfollow');
-
-			      	var name = reply.screen_name
-			      	console.log('\nPrune: unfollowed @'+ name);
-			    });
+				const params = {
+					q: config.keyword,
+					result_type: 'mixed',
+					lang: 'en'
+				};
+				bot.searchFollow(params, (err, reply) => {
+					if(err) return handleError(err, '\ntried to searchFollow');
+					console.log(`\nSearchFollow: followed @${reply.screen_name}`);
+				});
 			}
-		}, interval);
+		} else {
+			// remove a follower that doesn't follow you
+			bot.prune((err, reply) => {
+				if(err) return handleError(err, '\ntried to unfollow');
+				console.log(`\nPrune: unfollowed @${reply.screen_name}`);
+			});
+		}
+	}, interval);
+}
+
+const handleError = (err, attempt) => {
+	if (attempt) {
+		console.error(attempt);
 	}
+	console.error(
+		`${err}
+		response status: ${err.statusCode}
+		data: ${err.data}`
+	);
+}
 
-	function handleError(err, attempt) {
-		if (attempt) { console.error(attempt); }
-		console.error(err);
-		console.error('response status:', err.statusCode);
-	  	console.error('data:', err.data);
-	}
-
-	start();
-
-})();
+start();
