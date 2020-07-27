@@ -26,3 +26,4 @@ TODO:
   - [x] update to flickr-sdk
   - [x] update to twitter SDK
 - [x] reduce/remove usage of _
+- [ ] enable "dev" mode which does not submit data to Twitter

@@ -88,7 +88,7 @@ const start = (interval = 120) => {
   ]
 
   console.log(`Running Twitter behavior every ${interval} seconds...`)
-  setInterval(() => actions[randomInt(0, actions.length)](), interval * 1000)
+  setInterval(() => actions[randomInt(0, actions.length - 1)](), interval * 1000)
 }
 
 start()
