@@ -12,9 +12,9 @@ References:
 
 TODO:
 - [x] cleanup to match eslint (standard)
-- [x] update to flickr-sdk
-- [ ] update to twitter SDK (if exists)
 - [ ] incorporate flickr-faves-from-gallery
 - [ ] eliminate "this" and "prototype"
-- [ ] update dependencies
+- [x] update dependencies
+  - [x] update to flickr-sdk
+  - [x] update to twitter SDK
 - [x] reduce/remove usage of _

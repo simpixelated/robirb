@@ -17,7 +17,7 @@
   "dependencies": {
     "flickr-sdk": "^3.9.0",
     "lodash": "^4.17.19",
-    "twit": "^1.1.18"
+    "twitter": "^1.7.1"
   },
   "devDependencies": {
     "eslint": "^7.5.0",

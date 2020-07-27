@@ -2,12 +2,12 @@
 //  Bot
 //  class for performing various twitter actions
 //
-const Twit = require('./node_modules/twit/lib/twitter')
+const Twitter = require('twitter')
 const _ = require('lodash')
 const fs = require('fs')
 
 const Bot = module.exports = function (config) {
-  this.twit = new Twit(config)
+  this.twit = new Twitter(config)
   this.cache = []
   this.queue = []
   this.screen_name = config.screen_name
