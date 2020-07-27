@@ -160,9 +160,8 @@ Bot.prototype.favorite = function (params, callback) {
 }
 
 // check for duplicate tweets in recent timeline
-Bot.prototype.isDuplicate = function (tweet, tweets) {
-  tweets = tweets || this.cache
-  return _.any(tweets, { text: tweet })
+Bot.prototype.isDuplicate = function (text, tweets) {
+  return (tweets || this.cache).some(tweet => tweet.text === text)
 }
 
 Bot.prototype.randIndex = function (arr) {

@@ -10,7 +10,7 @@ const flickr = function (config) {
     FlickrAPI.tokenOnly(this.config, function (err, api) {
       if (err) { console.error(err) }
       api.photos.search({ text: query.replace(/\s/g, '+') }, function (err, result) {
-        const photos = _.map(result.photos.photo, function (flickrPhoto) {
+        const photos = result.photos.photo.map((flickrPhoto) => {
           flickrPhoto.url = 'https://flic.kr/p/' + base58encode(flickrPhoto.id)
           return flickrPhoto
         })
@@ -30,7 +30,7 @@ const flickr = function (config) {
       FlickrAPI.tokenOnly(this.config, function (err, api) {
         if (err) { console.error(err) }
         api.photos.search({ text: query.replace(/\s/g, '+') }, function (err, result) {
-          self.cache = _.map(_.shuffle(result.photos.photo), function (flickrPhoto) {
+          self.cache = _.shuffle(result.photos.photo).map((flickrPhoto) => {
             flickrPhoto.url = 'https://flic.kr/p/' + base58encode(flickrPhoto.id)
             return flickrPhoto
           })
