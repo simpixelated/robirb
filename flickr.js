@@ -1,22 +1,22 @@
-const FlickrAPI = require('flickrapi')
+const Flickr = require('flickr-sdk')
 const _ = require('lodash')
 
 const flickr = function (config) {
   this.cache = []
   this.config = config
+  this.api = new Flickr(config.api_key)
 
   // get a bunch of photos via keyword
   this.getPhotos = function (query, callback) {
-    FlickrAPI.tokenOnly(this.config, function (err, api) {
-      if (err) { console.error(err) }
-      api.photos.search({ text: query.replace(/\s/g, '+') }, function (err, result) {
-        const photos = result.photos.photo.map((flickrPhoto) => {
+    this.api.photos.search({ text: query.replace(/\s/g, '+') })
+      .then((response) => {
+        const photos = response.body.photos.photo.map((flickrPhoto) => {
           flickrPhoto.url = 'https://flic.kr/p/' + base58encode(flickrPhoto.id)
           return flickrPhoto
         })
-        return callback(err, photos)
+        return callback(null, photos)
       })
-    })
+      .catch(err => callback(err))
   }
 
   // get a single photo, either from cache or new call
@@ -27,17 +27,16 @@ const flickr = function (config) {
       photo = this.cache.pop()
       return callback(undefined, photo)
     } else {
-      FlickrAPI.tokenOnly(this.config, function (err, api) {
-        if (err) { console.error(err) }
-        api.photos.search({ text: query.replace(/\s/g, '+') }, function (err, result) {
-          self.cache = _.shuffle(result.photos.photo).map((flickrPhoto) => {
+      this.api.photos.search({ text: query.replace(/\s/g, '+') })
+        .then((response) => {
+          self.cache = _.shuffle(response.body.photos.photo).map((flickrPhoto) => {
             flickrPhoto.url = 'https://flic.kr/p/' + base58encode(flickrPhoto.id)
             return flickrPhoto
           })
           photo = self.cache.pop()
-          return callback(err, photo)
+          return callback(null, photo)
         })
-      })
+        .catch(err => callback(err))
     }
   }
 }

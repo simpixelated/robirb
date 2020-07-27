@@ -15,7 +15,7 @@
   "author": "Jordan Kohl",
   "license": "ISC",
   "dependencies": {
-    "flickrapi": "^0.3.23",
+    "flickr-sdk": "^3.9.0",
     "lodash": "^4.17.19",
     "twit": "^1.1.18"
   },
