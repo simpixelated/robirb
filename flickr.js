@@ -10,10 +10,7 @@ const flickr = function (config) {
   this.getPhotos = function (query, callback) {
     this.api.photos.search({ text: query.replace(/\s/g, '+') })
       .then((response) => {
-        const photos = response.body.photos.photo.map((flickrPhoto) => {
-          flickrPhoto.url = 'https://flic.kr/p/' + base58encode(flickrPhoto.id)
-          return flickrPhoto
-        })
+        const photos = response.body.photos.photo.map(augmentPhoto)
         return callback(null, photos)
       })
       .catch(err => callback(err))
@@ -29,10 +26,7 @@ const flickr = function (config) {
     } else {
       this.api.photos.search({ text: query.replace(/\s/g, '+') })
         .then((response) => {
-          self.cache = _.shuffle(response.body.photos.photo).map((flickrPhoto) => {
-            flickrPhoto.url = 'https://flic.kr/p/' + base58encode(flickrPhoto.id)
-            return flickrPhoto
-          })
+          self.cache = _.shuffle(response.body.photos.photo).map(augmentPhoto)
           photo = self.cache.pop()
           return callback(null, photo)
         })
@@ -41,8 +35,13 @@ const flickr = function (config) {
   }
 }
 
+const augmentPhoto = (flickrPhoto) => ({
+  ...flickrPhoto,
+  url: `https://flic.kr/p/${base58encode(flickrPhoto.id)}`
+})
+
 // used to create the flickr short url which Twitter scrapes to dislay the photo in the timeline
-function base58encode (num) {
+const base58encode = (num) => {
   if (typeof num !== 'number') num = parseInt(num)
   let enc = ''
   const alpha = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'

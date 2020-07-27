@@ -3,6 +3,14 @@ twitterbot
 
 Twitterbot that runs on Node.js
 
+### Usage
+1. Create your own `config.js` using `config.sample.js` as an example. Then, start it like a normal node app:
+
+```
+npm install
+npm start
+```
+
 References:
 
 * https://github.com/ttezel/twit
