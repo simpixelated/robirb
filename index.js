@@ -1,12 +1,9 @@
-const _ = require('lodash-node')
-
 const Bot = require('./bot')
 const config = require('./config')
 const bot = new Bot(config.twitter)
 const Flickr = require('./flickr')
 
 const interval = 120000
-const started = new Date()
 const flickr = new Flickr(config.flickr)
 
 const start = () => {
@@ -45,10 +42,10 @@ const start = () => {
       console.log('Would retweet from search, but that\'s not ready yet...')
       // TODO
       // const params = {
-      // 		q: config.keyword,
-      // 		result_type: 'mixed',
-      // 		lang: 'en'
-      // 	};
+      //   q: config.keyword,
+      //   result_type: 'mixed',
+      //   lang: 'en'
+      // }
 
       // follow someone new
     } else if (rand <= 0.70) {
@@ -83,9 +80,9 @@ const handleError = (err, attempt) => {
     console.error(attempt)
   }
   console.error(
-		`${err}
-		response status: ${err.statusCode}
-		data: ${err.data}`
+    `${err}
+    response status: ${err.statusCode}
+    data: ${err.data}`
   )
 }
 

@@ -120,7 +120,7 @@ Bot.prototype.searchFollow = function (params, callback) {
     const tweets = reply.statuses
     const target = self.randIndex(tweets).user.id_str
     self.twit.post('friendships/create', { id: target }, callback)
- 	})
+  })
 }
 
 //
@@ -154,7 +154,7 @@ Bot.prototype.favorite = function (params, callback) {
   self.twit.get('search/tweets', params, (err, reply) => {
     if (err) return callback(err)
     const tweets = reply.statuses
-    const randomTweet = randIndex(tweets)
+    const randomTweet = self.randIndex(tweets)
     self.twit.post('favorites/create', { id: randomTweet.id_str }, callback)
   })
 }

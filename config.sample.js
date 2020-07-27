@@ -14,8 +14,8 @@ module.exports = {
     // FLICKR_ACCESS_TOKEN_SECRET: ''
   },
   instagram: {
-    CLIENT_ID:	'',
-    CLIENT_SECRET:	''
+    CLIENT_ID: '',
+    CLIENT_SECRET: ''
   },
   keyword: ''
 }
