@@ -40,20 +40,4 @@ const augmentPhoto = (flickrPhoto) => ({
   url: `https://www.flickr.com/photos/${flickrPhoto.owner}/${flickrPhoto.id}`
 })
 
-// used to create the flickr short url which Twitter scrapes to dislay the photo in the timeline
-const base58encode = (num) => {
-  if (typeof num !== 'number') num = parseInt(num)
-  let enc = ''
-  const alpha = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
-  let div = num
-  let mod
-  while (num >= 58) {
-    div = num / 58
-    mod = num - (58 * Math.floor(div))
-    enc = '' + alpha.substr(mod, 1) + enc
-    num = Math.floor(div)
-  }
-  return (div) ? '' + alpha.substr(div, 1) + enc : enc
-}
-
 module.exports = flickr
