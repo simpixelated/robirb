@@ -26,7 +26,7 @@ const Bot = module.exports = function (config, devMode) {
 
 // add a tweet to queue
 Bot.prototype.queueTweets = function (tweets, callback) {
-  const queue = './data/tweetQueue.json'
+  const queue = `./data/tweetQueue-${this.screen_name}.json`
   const self = this
 
   fs.readFile(queue, (err, data) => {
@@ -49,7 +49,7 @@ Bot.prototype.queueTweets = function (tweets, callback) {
 }
 
 Bot.prototype.tweetFromQueue = function (callback) {
-  const queue = './data/tweetQueue.json'
+  const queue = `./data/tweetQueue-${this.screen_name}.json`
   const self = this
 
   fs.readFile(queue, (err, data) => {

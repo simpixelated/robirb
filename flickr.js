@@ -37,7 +37,7 @@ const flickr = function (config) {
 
 const augmentPhoto = (flickrPhoto) => ({
   ...flickrPhoto,
-  url: `https://flic.kr/p/${base58encode(flickrPhoto.id)}`
+  url: `https://www.flickr.com/photos/${flickrPhoto.owner}/${flickrPhoto.id}`
 })
 
 // used to create the flickr short url which Twitter scrapes to dislay the photo in the timeline

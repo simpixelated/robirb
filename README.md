@@ -4,8 +4,9 @@ twitterbot
 Twitterbot that runs on Node.js
 
 ### Usage
-1. Create your own `config.js` using `config.sample.js` as an example. Then, start it like a normal node app:
-
+1. Create your own `config.js` using `config.sample.js` as an example.
+1. Create a tweet queue file for each user (`data/tweetQueue-[username].json`).
+1. Start it like a normal node app:
 ```
 npm install
 npm start
@@ -20,11 +21,11 @@ References:
 
 TODO:
 - [x] cleanup to match eslint (standard)
-- [ ] incorporate flickr-faves-from-gallery
-- [ ] eliminate "this" and "prototype"
 - [x] update dependencies
   - [x] update to flickr-sdk
   - [x] update to twitter SDK
 - [x] reduce/remove usage of _
 - [x] enable "dev" mode which does not submit data to Twitter
-
+- [x] namespace tweet queue for multiple users
+- [ ] create tweet queue file if it does not exist
+- [ ] incorporate methods from flickr-faves-from-gallery
