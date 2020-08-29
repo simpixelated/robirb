@@ -54,13 +54,17 @@ const start = async (interval = 120, devMode = false) => {
   const actions = [
     // tweet from queue
     () => bot.tweetFromQueue((error, reply) => {
-      if (error) return handleError(error)
+      if (error) {
+        handleError(error)
+        return takeAction()
+      }
       console.log('\nTweet: ' + (reply ? reply.text : reply))
     }),
 
     // post an "original" tweet using a popular (based on retweets) tweet from search
     () => {
       console.log('Would retweet from search, but that\'s not ready yet :(')
+      takeAction()
       // TODO
       // const params = {
       //   q: config.keyword,
@@ -71,7 +75,7 @@ const start = async (interval = 120, devMode = false) => {
 
     // follow a friend of a friend
     () => bot.mingle((err, reply) => {
-      if (err) return handleError(err, '\ntried to mingle')
+      if (err) return handleError(err)
       if (reply && reply.screen_name) {
         console.log(`\nMingle: followed @${reply.screen_name}`)
       }
@@ -85,7 +89,7 @@ const start = async (interval = 120, devMode = false) => {
         lang: 'en'
       }
       bot.searchFollow(params, (err, reply) => {
-        if (err) return handleError(err, '\ntried to searchFollow')
+        if (err) return handleError(err)
         if (reply && reply.screen_name) {
           console.log(`\nSearchFollow: followed @${reply.screen_name}`)
         }
@@ -94,7 +98,7 @@ const start = async (interval = 120, devMode = false) => {
 
     // remove a follower that doesn't follow you
     () => bot.prune((err, reply) => {
-      if (err) return handleError(err, '\ntried to unfollow')
+      if (err) return handleError(err)
       if (reply && reply.screen_name) {
         console.log(`\nPrune: unfollowed @${reply.screen_name}`)
       }
@@ -102,7 +106,9 @@ const start = async (interval = 120, devMode = false) => {
   ]
 
   console.log(`Running Twitter behavior every ${interval} seconds...`)
-  setInterval(() => actions[randomInt(0, actions.length - 1)](), interval * 1000)
+  const takeAction = () => actions[randomInt(0, actions.length - 1)]()
+  takeAction()
+  setInterval(takeAction, interval * 1000)
 }
 
-start()
+start(30)

@@ -5,6 +5,7 @@
 const Twitter = require('twitter')
 const _ = require('lodash')
 const fs = require('fs')
+const config = require('./config')
 
 const Bot = module.exports = function (config, devMode) {
   this.twit = new Twitter(config)
@@ -142,10 +143,10 @@ Bot.prototype.searchFollow = function (params, callback) {
 //
 Bot.prototype.prune = function (callback) {
   const self = this
-  self.twit.get('followers/ids', (err, reply) => {
+  self.twit.get('followers/ids', { screen_name: self.screen_name }, (err, reply) => {
     if (err) return callback(err)
     const followers = reply.ids
-    self.twit.get('friends/ids', (err, reply) => {
+    self.twit.get('friends/ids', { screen_name: self.screen_name }, (err, reply) => {
       if (err) return callback(err)
       const friends = reply.ids
       let pruned = false

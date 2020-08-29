@@ -1,5 +1,6 @@
 node_modules
 config.js
+.npmrc
 data
 project.sublime-project
 project.sublime-workspace

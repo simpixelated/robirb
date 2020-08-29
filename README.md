@@ -21,3 +21,4 @@ TODO:
 - [x] do better string comparison to avoid duplicate tweets
 - [ ] add option to post queue to external source (like Google sheets)
 - [ ] search for Twitter username using Flickr username
+- [ ] create oath signin flow to get tokens for user specific actions (like unfollowing)
