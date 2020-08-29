@@ -5,7 +5,6 @@
 const Twitter = require('twitter')
 const _ = require('lodash')
 const fs = require('fs')
-const config = require('./config')
 
 const Bot = module.exports = function (config, devMode) {
   this.twit = new Twitter(config)
@@ -112,7 +111,7 @@ Bot.prototype.retweet = function (params, callback) {
 //
 Bot.prototype.mingle = function (callback) {
   const self = this
-  self.twit.get('followers/ids', (err, reply) => {
+  self.twit.get('followers/ids', { screen_name: self.screen_name }, (err, reply) => {
     if (err) { return callback(err) }
     const followers = reply.ids
     const randFollower = self.randIndex(followers)

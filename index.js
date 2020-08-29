@@ -12,9 +12,8 @@ const handleError = (err, attempt) => {
   if (attempt) {
     console.error(attempt)
   }
-  console.error(
-    `${err}
-    response status: ${err.statusCode}
+  console.error(err,
+    `response status: ${err.statusCode}
     data: ${err.data}`
   )
 }
@@ -53,13 +52,16 @@ const start = async (interval = 120, devMode = false) => {
   // all possible actions to take
   const actions = [
     // tweet from queue
-    () => bot.tweetFromQueue((error, reply) => {
-      if (error) {
-        handleError(error)
-        return takeAction()
-      }
-      console.log('\nTweet: ' + (reply ? reply.text : reply))
-    }),
+    () => {
+      console.log('Attempting to tweet from queue...')
+      bot.tweetFromQueue((error, reply) => {
+        if (error) {
+          handleError(error)
+          return takeAction()
+        }
+        console.log('\nTweet: ' + (reply ? reply.text : reply))
+      })
+    },
 
     // post an "original" tweet using a popular (based on retweets) tweet from search
     () => {
@@ -74,12 +76,15 @@ const start = async (interval = 120, devMode = false) => {
     },
 
     // follow a friend of a friend
-    () => bot.mingle((err, reply) => {
-      if (err) return handleError(err)
-      if (reply && reply.screen_name) {
-        console.log(`\nMingle: followed @${reply.screen_name}`)
-      }
-    }),
+    () => {
+      console.log('Attempting to follow someone in network...')
+      bot.mingle((err, reply) => {
+        if (err) return handleError(err)
+        if (reply && reply.screen_name) {
+          console.log(`\nMingle: followed @${reply.screen_name}`)
+        }
+      })
+    },
 
     // find someone new to follow
     () => {
@@ -88,6 +93,7 @@ const start = async (interval = 120, devMode = false) => {
         result_type: 'mixed',
         lang: 'en'
       }
+      console.log('Attempting to follow someone new...')
       bot.searchFollow(params, (err, reply) => {
         if (err) return handleError(err)
         if (reply && reply.screen_name) {
@@ -97,12 +103,15 @@ const start = async (interval = 120, devMode = false) => {
     },
 
     // remove a follower that doesn't follow you
-    () => bot.prune((err, reply) => {
-      if (err) return handleError(err)
-      if (reply && reply.screen_name) {
-        console.log(`\nPrune: unfollowed @${reply.screen_name}`)
-      }
-    })
+    () => {
+      console.log('Attempting to remove a follower that is now following...')
+      bot.prune((err, reply) => {
+        if (err) return handleError(err)
+        if (reply && reply.screen_name) {
+          console.log(`\nPrune: unfollowed @${reply.screen_name}`)
+        }
+      })
+    }
   ]
 
   console.log(`Running Twitter behavior every ${interval} seconds...`)
@@ -111,4 +120,4 @@ const start = async (interval = 120, devMode = false) => {
   setInterval(takeAction, interval * 1000)
 }
 
-start(30)
+start()
