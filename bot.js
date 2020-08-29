@@ -30,7 +30,10 @@ Bot.prototype.queueTweets = function (tweets, callback) {
   const self = this
 
   fs.readFile(queue, (err, data) => {
-    if (err) throw err
+    if (err) {
+      fs.writeFileSync(queue, '[]')
+      data = '[]'
+    }
     data = JSON.parse(data)
     tweets = tweets.filter((tweet) => !self.isDuplicate(tweet.text, data.concat(self.cache)))
 

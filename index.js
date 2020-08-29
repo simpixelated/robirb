@@ -19,7 +19,7 @@ const handleError = (err, attempt) => {
   )
 }
 
-const start = (interval = 120, devMode = false) => {
+const start = async (interval = 120, devMode = false) => {
   const bot = new Bot(config.twitter, devMode)
   const flickr = new Flickr(config.flickr)
 
@@ -30,17 +30,25 @@ const start = (interval = 120, devMode = false) => {
   })
 
   // create tweets from Flickr photos
-  flickr.getPhotos(config.keyword, (err, photos) => {
-    if (err) return handleError(err)
+  try {
+    let photos = []
+    if (config.flickr.user_id) {
+      console.log(`getting Flickr favorites for ${config.flickr.user_id}`)
+      photos = await flickr.getFavoritePhotosForUser(config.flickr.user_id)
+    } else {
+      photos = await flickr.getPhotos(config.keyword)
+    }
     const tweets = photos.map((photo) => ({
-      text: `${photo.title} ${photo.url}`,
+      text: `${photo.title} by ${photo.ownername} ${photo.url}`,
       approved: false
     }))
     bot.queueTweets(tweets, (err, resp) => {
       if (err) return handleError(err)
       console.log(resp)
     })
-  })
+  } catch (error) {
+    handleError(error)
+  }
 
   // all possible actions to take
   const actions = [

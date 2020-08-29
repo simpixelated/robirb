@@ -13,8 +13,9 @@ npm start
 ```
 
 TODO:
-- [ ] create tweet queue file if it does not exist
-- [ ] incorporate methods from flickr-faves-from-gallery
-- [ ] convert flickr.js to async/await
+- [x] create tweet queue file if it does not exist
+- [x] incorporate methods from flickr-faves-from-gallery
+- [x] convert flickr.js to async/await
 - [ ] convert bot.js to async/await
 - [ ] implement retweet action
+- [ ] do better string comparison to avoid duplicate tweets
