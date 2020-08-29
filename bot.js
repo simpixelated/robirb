@@ -175,7 +175,14 @@ Bot.prototype.favorite = function (params, callback) {
 
 // check for duplicate tweets in recent timeline
 Bot.prototype.isDuplicate = function (text, tweets) {
-  return (tweets || this.cache).some(tweet => tweet.text === text)
+  return (tweets || this.cache).some(tweet => {
+    if (tweet.text === text) {
+      return true
+    }
+    if (tweet.text.split('http')[0] === text.split('http')[0]) {
+      return true
+    }
+  })
 }
 
 Bot.prototype.randIndex = function (arr) {

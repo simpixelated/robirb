@@ -18,4 +18,6 @@ TODO:
 - [x] convert flickr.js to async/await
 - [ ] convert bot.js to async/await
 - [ ] implement retweet action
-- [ ] do better string comparison to avoid duplicate tweets
+- [x] do better string comparison to avoid duplicate tweets
+- [ ] add option to post queue to external source (like Google sheets)
+- [ ] search for Twitter username using Flickr username
