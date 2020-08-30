@@ -1,9 +1,12 @@
 robirb
 ==========
 
-Twitterbot that runs on Node.js
+Twitterbot that runs on Node.js. Creates tweets from Flickr photos, follows/unfollows, and more.
 
 ### Usage
+
+You will need a [Twitter developer app](https://developer.twitter.com/en/apps) and the access tokens for a user authenticated with your app.
+
 1. Create your own `config.js` using `config.sample.js` as an example.
 1. Start it like a normal node app:
 ```
