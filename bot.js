@@ -72,7 +72,8 @@ Bot.prototype.tweetFromQueue = function (callback) {
         }
       })
     } else {
-      return callback(new Error('no approved tweets in queue'))
+      console.error('No approved tweets in queue')
+      return callback(null)
     }
   })
 }

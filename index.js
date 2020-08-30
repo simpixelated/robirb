@@ -53,13 +53,16 @@ const start = async (interval = 120, devMode = false) => {
   const actions = [
     // tweet from queue
     () => {
-      console.log('Attempting to tweet from queue...')
+      const message = 'Attempted to tweet from queue...'
       bot.tweetFromQueue((error, reply) => {
         if (error) {
+          console.error(message)
           handleError(error)
+        } else if (reply) {
+          console.log('Tweet: ' + (reply ? reply.text : reply))
+        } else {
           return takeAction()
         }
-        console.log('\nTweet: ' + (reply ? reply.text : reply))
       })
     },
 
@@ -77,11 +80,14 @@ const start = async (interval = 120, devMode = false) => {
 
     // follow a friend of a friend
     () => {
-      console.log('Attempting to follow someone in network...')
+      const message = 'Attempted to follow someone in network...'
       bot.mingle((err, reply) => {
-        if (err) return handleError(err)
+        if (err) {
+          console.error(message)
+          return handleError(err)
+        }
         if (reply && reply.screen_name) {
-          console.log(`\nMingle: followed @${reply.screen_name}`)
+          console.log(`Mingle: followed @${reply.screen_name}`)
         }
       })
     },
@@ -93,22 +99,28 @@ const start = async (interval = 120, devMode = false) => {
         result_type: 'mixed',
         lang: 'en'
       }
-      console.log('Attempting to follow someone new...')
+      const message = 'Attempted to follow someone new...'
       bot.searchFollow(params, (err, reply) => {
-        if (err) return handleError(err)
+        if (err) {
+          console.error(message)
+          return handleError(err)
+        }
         if (reply && reply.screen_name) {
-          console.log(`\nSearchFollow: followed @${reply.screen_name}`)
+          console.log(`SearchFollow: followed @${reply.screen_name}`)
         }
       })
     },
 
     // remove a follower that doesn't follow you
     () => {
-      console.log('Attempting to remove a follower that is now following...')
+      const message = 'Attempted to stop following someone that is not a follower...'
       bot.prune((err, reply) => {
-        if (err) return handleError(err)
+        if (err) {
+          console.error(message)
+          return handleError(err)
+        }
         if (reply && reply.screen_name) {
-          console.log(`\nPrune: unfollowed @${reply.screen_name}`)
+          console.log(`Prune: unfollowed @${reply.screen_name}`)
         }
       })
     }
