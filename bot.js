@@ -25,153 +25,111 @@ const Bot = module.exports = function (config, devMode) {
 }
 
 // add a tweet to queue
-Bot.prototype.queueTweets = function (tweets, callback) {
+Bot.prototype.queueTweets = async function (tweets) {
   const queue = `./data/tweetQueue-${this.screen_name}.json`
-  const self = this
+  let data = []
 
-  fs.readFile(queue, (err, data) => {
-    if (err) {
-      fs.writeFileSync(queue, '[]')
-      data = '[]'
-    }
-    data = JSON.parse(data)
-    tweets = tweets.filter((tweet) => !self.isDuplicate(tweet.text, data.concat(self.cache)))
-
-    if (!tweets.length) {
-      return callback(null, `0 new tweets added | ${data.length} in queue (${data.filter(tweet => tweet.approved === true).length} approved)`)
-    }
-    // update the file
-    fs.writeFile(queue, JSON.stringify(data.concat(tweets), null, 4), (err) => {
-      if (err) {
-        return callback(err)
-      } else {
-        return callback(null, `${tweets.length} new tweets added to queue`)
-      }
-    })
-  })
+  try {
+    data = JSON.parse(fs.readFileSync(queue))
+  } catch (error) {
+    fs.writeFileSync(queue, data)
+  }
+  tweets = tweets.filter((tweet) => !this.isDuplicate(tweet.text, data.concat(this.cache)))
+  if (!tweets.length) {
+    console.log(`0 new tweets added | ${data.length} in queue (${data.filter(tweet => tweet.approved === true).length} approved)`)
+  }
+  // update the file
+  fs.writeFileSync(queue, JSON.stringify(data.concat(tweets), null, 4))
+  console.log(`${tweets.length} new tweets added to queue`)
 }
 
-Bot.prototype.tweetFromQueue = function (callback) {
+Bot.prototype.tweetFromQueue = async function () {
   const queue = `./data/tweetQueue-${this.screen_name}.json`
-  const self = this
-
-  fs.readFile(queue, (err, data) => {
-    if (err) throw err
-    const tweets = JSON.parse(data)
-    const tweet = tweets.find(tweet => tweet.approved === true)
-
-    if (tweet) {
-      self.tweet(tweet.text, callback)
-      _.remove(tweets, (qTweet) => qTweet.text === tweet.text)
-      // update the queue
-      fs.writeFile(queue, JSON.stringify(tweets, null, 4), (err) => {
-        if (err) {
-          console.error(err)
-        } else {
-          console.log(`${tweets.length} tweets still in queue`)
-        }
-      })
-    } else {
-      console.error('No approved tweets in queue')
-      return callback(null)
-    }
-  })
+  const tweets = JSON.parse(fs.readFileSync(queue))
+  const tweet = tweets.find(tweet => tweet.approved === true)
+  if (tweet) {
+    const response = await this.tweet(tweet.text)
+    _.remove(tweets, (qTweet) => qTweet.text === tweet.text)
+    // update the queue
+    fs.writeFileSync(queue, JSON.stringify(tweets, null, 4))
+    console.log(`${tweets.length} tweets still in queue`)
+    return response
+  } else {
+    console.error('No approved tweets in queue')
+    return null
+  }
 }
 
 //
 //  post a tweet
 //
-Bot.prototype.tweet = function (status, callback) {
+Bot.prototype.tweet = async function (status) {
   if (typeof status !== 'string') {
-    return callback(new Error('tweet must be of type String'))
+    throw new Error('tweet must be of type String')
   } else if (status.length > 140) {
-    return callback(new Error(`tweet is too long: ${status.length}`))
+    throw new Error(`tweet is too long: ${status.length}`)
   } else if (this.isDuplicate(status)) {
-    return callback(new Error('tweet is a duplicate'))
+    throw new Error('tweet is a duplicate')
   }
-  this.twit.post('statuses/update', { status: status }, callback)
+  const response = await this.twit.post('statuses/update', { status: status })
   // add the new tweet to the stash
   this.cache.push({ text: status })
+  return response
 }
 
 //
 // retweet
 //
-Bot.prototype.retweet = function (params, callback) {
-  const self = this
-  self.twit.get('search/tweets', params, (err, reply) => {
-    if (err) return callback(err)
-    const tweets = reply.statuses
-    const randomTweet = self.randIndex(tweets)
-    self.twit.post('statuses/retweet/:id', { id: randomTweet.id_str }, callback)
-  })
+Bot.prototype.retweet = async function (params) {
+  const reply = await this.twit.get('search/tweets', params)
+  const tweets = reply.statuses
+  const randomTweet = this.randIndex(tweets)
+  return this.twit.post('statuses/retweet/:id', { id: randomTweet.id_str })
 }
 
 //
 //  choose a random friend of one of your followers, and follow that user
 //
-Bot.prototype.mingle = function (callback) {
-  const self = this
-  self.twit.get('followers/ids', { screen_name: self.screen_name }, (err, reply) => {
-    if (err) { return callback(err) }
-    const followers = reply.ids
-    const randFollower = self.randIndex(followers)
-    self.twit.get('friends/ids', { user_id: randFollower }, (err, reply) => {
-      if (err) { return callback(err) }
-      const friends = reply.ids
-      const target = self.randIndex(friends)
-      self.twit.post('friendships/create', { id: target }, callback)
-    })
-  })
+Bot.prototype.mingle = async function () {
+  const { ids: followers } = await this.twit.get('followers/ids', { screen_name: this.screen_name })
+  const randFollower = this.randIndex(followers)
+  const { ids: friends } = await this.twit.get('friends/ids', { user_id: randFollower })
+  const target = this.randIndex(friends)
+  return this.twit.post('friendships/create', { id: target })
 }
 
 //
 //  follow someone new by searching for relevant tweets
 //
-Bot.prototype.searchFollow = function (params, callback) {
-  const self = this
-  self.twit.get('search/tweets', params, (err, reply) => {
-    if (err) return callback(err)
-    const tweets = reply.statuses
-    const target = self.randIndex(tweets).user.id_str
-    self.twit.post('friendships/create', { id: target }, callback)
-  })
+Bot.prototype.searchFollow = async function (params) {
+  const { statuses: tweets } = await this.twit.get('search/tweets', params)
+  const target = this.randIndex(tweets).user.id_str
+  return this.twit.post('friendships/create', { id: target })
 }
 
 //
 //  prune your followers list; unfollow a friend that hasn't followed you back
 //
-Bot.prototype.prune = function (callback) {
-  const self = this
-  self.twit.get('followers/ids', { screen_name: self.screen_name }, (err, reply) => {
-    if (err) return callback(err)
-    const followers = reply.ids
-    self.twit.get('friends/ids', { screen_name: self.screen_name }, (err, reply) => {
-      if (err) return callback(err)
-      const friends = reply.ids
-      let pruned = false
-      while (!pruned) {
-        const target = self.randIndex(friends)
-        if (!~followers.indexOf(target)) {
-          pruned = true
-          self.twit.post('friendships/destroy', { id: target }, callback)
-        }
-      }
-    })
-  })
+Bot.prototype.prune = async function () {
+  const { ids: followers } = await this.twit.get('followers/ids', { screen_name: this.screen_name })
+  const { ids: friends } = await this.twit.get('friends/ids', { screen_name: this.screen_name })
+  let pruned = false
+  while (!pruned) {
+    const target = this.randIndex(friends)
+    if (!~followers.indexOf(target)) {
+      pruned = true
+      return this.twit.post('friendships/destroy', { id: target })
+    }
+  }
 }
 
 //
 // favorite a tweet
 //
-Bot.prototype.favorite = function (params, callback) {
-  const self = this
-  self.twit.get('search/tweets', params, (err, reply) => {
-    if (err) return callback(err)
-    const tweets = reply.statuses
-    const randomTweet = self.randIndex(tweets)
-    self.twit.post('favorites/create', { id: randomTweet.id_str }, callback)
-  })
+Bot.prototype.favorite = async function (params) {
+  const { statuses: tweets } = await this.twit.get('search/tweets', params)
+  const randomTweet = this.randIndex(tweets)
+  return this.twit.post('favorites/create', { id: randomTweet.id_str })
 }
 
 // check for duplicate tweets in recent timeline

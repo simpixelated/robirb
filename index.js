@@ -41,93 +41,96 @@ const start = async (interval = 120, devMode = false) => {
       text: `${photo.title} by ${photo.ownername} ${photo.url}`,
       approved: false
     }))
-    bot.queueTweets(tweets, (err, resp) => {
-      if (err) return handleError(err)
-      console.log(resp)
-    })
+    await bot.queueTweets(tweets)
   } catch (error) {
     handleError(error)
   }
 
   // all possible actions to take
   const actions = [
-    // tweet from queue
-    () => {
-      const message = 'Attempted to tweet from queue...'
-      bot.tweetFromQueue((error, reply) => {
-        if (error) {
-          console.error(message)
-          handleError(error)
-        } else if (reply) {
+    {
+      description: 'tweet from queue',
+      execute: async () => {
+        const reply = await bot.tweetFromQueue()
+        if (reply) {
           console.log('Tweet: ' + (reply ? reply.text : reply))
         } else {
-          return takeAction()
+          takeAction()
         }
-      })
+      }
     },
 
-    // post an "original" tweet using a popular (based on retweets) tweet from search
-    () => {
-      console.log('Would retweet from search, but that\'s not ready yet :(')
-      takeAction()
-      // TODO
-      // const params = {
-      //   q: config.keyword,
-      //   result_type: 'mixed',
-      //   lang: 'en'
-      // }
+    {
+      execute: () => {
+        // post an "original" tweet using a popular (based on retweets) tweet from search
+        console.log('Would retweet from search, but that\'s not ready yet :(')
+        takeAction()
+        // TODO
+        // const params = {
+        //   q: config.keyword,
+        //   result_type: 'mixed',
+        //   lang: 'en'
+        // }
+      }
     },
 
-    // follow a friend of a friend
-    () => {
-      const message = 'Attempted to follow someone in network...'
-      bot.mingle((err, reply) => {
-        if (err) {
-          console.error(message)
-          return handleError(err)
-        }
+    {
+      description: 'follow someone in network',
+      execute: async () => {
+        const reply = await bot.mingle()
         if (reply && reply.screen_name) {
           console.log(`Mingle: followed @${reply.screen_name}`)
         }
-      })
+      }
     },
 
-    // find someone new to follow
-    () => {
-      const params = {
-        q: config.keyword,
-        result_type: 'mixed',
-        lang: 'en'
-      }
-      const message = 'Attempted to follow someone new...'
-      bot.searchFollow(params, (err, reply) => {
-        if (err) {
-          console.error(message)
-          return handleError(err)
+    {
+      description: 'search for someone new to follow',
+      execute: async () => {
+        const params = {
+          q: config.keyword,
+          result_type: 'mixed',
+          lang: 'en'
         }
+        const reply = await bot.searchFollow(params)
         if (reply && reply.screen_name) {
           console.log(`SearchFollow: followed @${reply.screen_name}`)
         }
-      })
+      }
     },
 
-    // remove a follower that doesn't follow you
-    () => {
-      const message = 'Attempted to stop following someone that is not a follower...'
-      bot.prune((err, reply) => {
-        if (err) {
-          console.error(message)
-          return handleError(err)
-        }
+    {
+      description: 'unfollow non-follower.',
+      execute: async () => {
+        const reply = await bot.prune()
         if (reply && reply.screen_name) {
           console.log(`Prune: unfollowed @${reply.screen_name}`)
         }
+      }
+    },
+
+    {
+      description: 'favorite a tweet',
+      execute: () => bot.favorite({
+        q: config.keyword,
+        result_type: 'mixed',
+        lang: 'en'
       })
     }
   ]
 
   console.log(`Running Twitter behavior every ${interval} seconds...`)
-  const takeAction = () => actions[randomInt(0, actions.length - 1)]()
+  const takeAction = async () => {
+    const randomNumber = randomInt(0, actions.length - 1)
+    const action = actions[randomNumber]
+    try {
+      await action.execute()
+    } catch (error) {
+      console.error(`Failed to: ${action.description}`)
+      handleError(error)
+    }
+  }
+
   takeAction()
   setInterval(takeAction, interval * 1000)
 }
