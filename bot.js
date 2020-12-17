@@ -138,6 +138,7 @@ Bot.prototype.isDuplicate = function (text, tweets) {
     if (tweet.text === text) {
       return true
     }
+    // checks for same URL (helpful if you disable shorteners)
     if (tweet.text.split('http')[0] === text.split('http')[0]) {
       return true
     }
