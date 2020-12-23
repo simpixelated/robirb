@@ -104,7 +104,8 @@ Bot.prototype.mingle = async function () {
 Bot.prototype.searchFollow = async function (params) {
   const { statuses: tweets } = await this.twit.get('search/tweets', params)
   const target = this.randIndex(tweets).user.id_str
-  return this.twit.post('friendships/create', { id: target })
+  const response = await this.twit.post('friendships/create', { id: target })
+  return response
 }
 
 //
@@ -137,10 +138,11 @@ Bot.prototype.isDuplicate = function (text, tweets) {
   return (tweets || this.cache).some(tweet => {
     if (tweet.text === text) {
       return true
-    }
     // checks for same URL (helpful if you disable shorteners)
-    if (tweet.text.split('http')[0] === text.split('http')[0]) {
+    } else if (tweet.text.split('http')[0] === text.split('http')[0]) {
       return true
+    } else {
+      return false
     }
   })
 }
