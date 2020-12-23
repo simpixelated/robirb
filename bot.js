@@ -24,6 +24,17 @@ const Bot = module.exports = function (config, devMode) {
   }
 }
 
+Bot.prototype.populateCache = async function () {
+  const statuses = await this.twit.get('statuses/user_timeline', { screen_name: this.screen_name })
+  this.cache = statuses.map(status => {
+    return {
+      text: status.text,
+      url: _.get(status, 'entities.urls[0].expanded_url')
+    }
+  })
+  return this.cache
+}
+
 // add a tweet to queue
 Bot.prototype.queueTweets = async function (tweets) {
   const queue = `./data/tweetQueue-${this.screen_name}.json`
@@ -139,7 +150,9 @@ Bot.prototype.isDuplicate = function (text, tweets) {
     if (tweet.text === text) {
       return true
     // checks for same URL (helpful if you disable shorteners)
-    } else if (tweet.text.split('http')[0] === text.split('http')[0]) {
+    } else if (tweet.text.split('http')[1] === text.split('http')[1]) {
+      return true
+    } else if (tweet.url && text.split('http')[1] === tweet.url.split('http')[1]) {
       return true
     } else {
       return false

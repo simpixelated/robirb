@@ -22,11 +22,12 @@ const start = async (interval = 120, devMode = false) => {
   const bot = new Bot(config.twitter, devMode)
   const flickr = new Flickr(config.flickr)
 
-  console.log(`Fetching tweets for ${bot.screen_name} to help prevent duplicates...`)
-  bot.twit.get('statuses/user_timeline', { screen_name: bot.screen_name }, (err, statuses) => {
-    if (err) return handleError(err, '\nfailed to get timeline')
-    bot.cache = statuses
-  })
+  try {
+    console.log(`Fetching tweets for ${bot.screen_name} to help prevent duplicates...`)
+    await bot.populateCache()
+  } catch (err) {
+    handleError(err, '\nfailed to get timeline')
+  }
 
   // create tweets from Flickr photos
   try {
