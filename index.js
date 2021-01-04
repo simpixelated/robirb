@@ -62,20 +62,6 @@ const start = async (interval = 120, devMode = false) => {
     },
 
     {
-      execute: () => {
-        // post an "original" tweet using a popular (based on retweets) tweet from search
-        console.log('Would retweet from search, but that\'s not ready yet :(')
-        takeAction()
-        // TODO
-        // const params = {
-        //   q: config.keyword,
-        //   result_type: 'mixed',
-        //   lang: 'en'
-        // }
-      }
-    },
-
-    {
       description: 'follow someone in network',
       execute: async () => {
         const reply = await bot.mingle()
@@ -113,8 +99,9 @@ const start = async (interval = 120, devMode = false) => {
     {
       description: 'favorite a tweet',
       execute: () => bot.favorite({
-        q: config.keyword,
+        q: `${config.keyword}%20-filter%3Aretweets`,
         result_type: 'mixed',
+        count: 50,
         lang: 'en'
       })
     }

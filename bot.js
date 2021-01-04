@@ -10,6 +10,8 @@ const Bot = module.exports = function (config, devMode) {
   this.twit = new Twitter(config)
   this.cache = []
   this.queue = []
+  this.followers = []
+  this.likes = []
   this.screen_name = config.screen_name
   if (devMode === true) {
     console.log('devMode enabled; no tweets will be posted')
@@ -99,14 +101,36 @@ Bot.prototype.retweet = async function (params) {
 }
 
 //
-//  choose a random friend of one of your followers, and follow that user
+//  follow someone that one of your followers also follows
 //
 Bot.prototype.mingle = async function () {
-  const { ids: followers } = await this.twit.get('followers/ids', { screen_name: this.screen_name })
-  const randFollower = this.randIndex(followers)
-  const { ids: friends } = await this.twit.get('friends/ids', { user_id: randFollower })
-  const target = this.randIndex(friends)
-  return this.twit.post('friendships/create', { id: target })
+  if (!this.followers.length) {
+    const { ids: followers } = await this.twit.get('followers/ids', { screen_name: this.screen_name })
+    this.followers = followers
+  }
+  let result = null
+  let success = false
+  // loop through followers until one succeeds
+  while (!success) {
+    try {
+      const randFollower = this.randIndex(this.followers)
+      // console.log(`attempting to get friends for ${randFollower}`)
+      const { ids: friends } = await this.twit.get('followers/ids', { user_id: randFollower })
+      // console.log(`found ${friends.length} friends of follower: ${randFollower}`)
+      const target = this.randIndex(friends)
+      // console.log(`attempting to follow ${target}`)
+      result = await this.twit.post('friendships/create', { id: target })
+      this.followers.push(target)
+      success = true
+    } catch (err) {
+      console.log(err)
+      // exit out of loop if rate limited
+      if (err[0].code === 88) {
+        success = true
+      }
+    }
+  }
+  return result
 }
 
 //
@@ -123,13 +147,17 @@ Bot.prototype.searchFollow = async function (params) {
 //  prune your followers list; unfollow a friend that hasn't followed you back
 //
 Bot.prototype.prune = async function () {
-  const { ids: followers } = await this.twit.get('followers/ids', { screen_name: this.screen_name })
+  if (!this.followers.length) {
+    const { ids: followers } = await this.twit.get('followers/ids', { screen_name: this.screen_name })
+    this.followers = followers
+  }
   const { ids: friends } = await this.twit.get('friends/ids', { screen_name: this.screen_name })
   let pruned = false
   while (!pruned) {
     const target = this.randIndex(friends)
-    if (!~followers.indexOf(target)) {
+    if (!~this.followers.indexOf(target)) {
       pruned = true
+      // TODO: remove follower from this.followers
       return this.twit.post('friendships/destroy', { id: target })
     }
   }
@@ -139,9 +167,21 @@ Bot.prototype.prune = async function () {
 // favorite a tweet
 //
 Bot.prototype.favorite = async function (params) {
+  // have to filter out users existing favorites since search doesn't include correct info
+  // https://twittercommunity.com/t/favorited-reports-as-false-even-if-status-is-already-favorited-by-the-user/11145/10
+  if (!this.likes.length) {
+    const likes = await this.twit.get('favorites/list', { screen_name: this.screen_name, count: 200 })
+    this.likes = likes.map(like => like.id_str)
+  }
   const { statuses: tweets } = await this.twit.get('search/tweets', params)
-  const randomTweet = this.randIndex(tweets)
-  return this.twit.post('favorites/create', { id: randomTweet.id_str })
+  const filtered = tweets.filter(tweet => !this.likes.includes(_.get(tweet, 'retweeted_status.id_str') || tweet.id_str))
+  if (filtered.length > 0) {
+    const randomTweet = this.randIndex(filtered)
+    return this.twit.post('favorites/create', { id: randomTweet.id_str })
+  } else {
+    console.log('could not find a tweet that has not already been favorited')
+    return null
+  }
 }
 
 // check for duplicate tweets in recent timeline

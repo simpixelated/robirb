@@ -25,7 +25,7 @@ const flickr = function (config) {
 
   // get all favorite photos from a single user
   this.getFavoritePhotosForUser = async (userId) => {
-    const response = await this.api.favorites.getPublicList({ user_id: userId, extras: 'owner_name' })
+    const response = await this.api.favorites.getPublicList({ user_id: userId, extras: 'owner_name', per_page: 500 })
     return response.body.photos.photo.map(augmentPhoto)
   }
 }
