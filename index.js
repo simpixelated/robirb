@@ -1,3 +1,4 @@
+const fs = require('fs')
 const Bot = require('./bot')
 const config = require('./config')
 const Flickr = require('./flickr')
@@ -31,6 +32,7 @@ const start = async (interval = 120, devMode = false) => {
 
   // create tweets from Flickr photos
   try {
+    const names = JSON.parse(fs.readFileSync('./data/flickr-twitter-usernames.json'))
     let photos = []
     if (config.flickr.user_id) {
       console.log(`getting Flickr favorites for ${config.flickr.user_id}`)
@@ -38,10 +40,13 @@ const start = async (interval = 120, devMode = false) => {
     } else {
       photos = await flickr.getPhotos(config.keyword)
     }
-    const tweets = photos.map((photo) => ({
-      text: `${photo.title} by ${photo.ownername} ${photo.url}`,
-      approved: false
-    }))
+    const tweets = photos.map((photo) => {
+      const name = names[photo.ownername] ? `@${names[photo.ownername]}` : photo.ownername
+      return {
+        text: `${photo.title} by ${name} ${photo.url}`,
+        approved: false
+      }
+    })
     await bot.queueTweets(tweets)
   } catch (error) {
     handleError(error)
