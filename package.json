@@ -16,7 +16,6 @@
   "license": "ISC",
   "dependencies": {
     "flickr-sdk": "^3.10.0",
-    "googleapis": "^81.0.0",
     "lodash": "^4.17.21",
     "twitter": "^1.7.1"
   },

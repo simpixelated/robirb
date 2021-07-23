@@ -41,7 +41,11 @@ const start = async (interval = 120, devMode = false) => {
       photos = await flickr.getPhotos(config.keyword)
     }
     const tweets = photos.map((photo) => {
-      const name = names[photo.ownername] ? `@${names[photo.ownername]}` : photo.ownername
+      const social = names[photo.ownername]
+      let name = photo.ownername
+      if (social) {
+        name = Object.keys(social).map(network => `@${social[network]} (${network})`).join(' ')
+      }
       return {
         text: `${photo.title} by ${name} ${photo.url}`,
         approved: false
