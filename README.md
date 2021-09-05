@@ -1,7 +1,7 @@
 robirb
 ==========
 
-Twitterbot that runs on Node.js. Creates tweets from Flickr photos, follows/unfollows, and more.
+Twitterbot that runs on Node.js. Creates tweets from Flickr photos, follows/unfollows, and more. Can also be used to generate posts for Instagram. [Read more about how I used this to go from 0 to 300 followers](https://simpixelated.com/getting-to-300-followers-with-a-twitter-bot)!
 
 ### Usage
 
